@@ -1,24 +1,29 @@
-// main.go
 package main
 
 import (
-	"EleicoesVirtual-back-end/controllers"
-	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
+	"github.com/gaitolini/EleicoesVirtual-back-end/services"
 	"github.com/gorilla/mux"
 )
 
 func main() {
+	// Inicializar o Firestore
+	services.InitializeFirestoreClient()
+
+	// Configurar roteador
 	r := mux.NewRouter()
 
+	// Rotas para eleições
 	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods("POST")
 	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods("GET")
 	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods("GET")
 	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods("PUT")
 	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods("DELETE")
 
-	fmt.Println("Servidor rodando na porta 8080")
+	// Iniciar o servidor
+	log.Println("Servidor rodando na porta 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

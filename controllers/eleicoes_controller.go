@@ -1,48 +1,61 @@
-// controllers/eleicoes_controller.go
 package controllers
 
 import (
-	"EleicoesVirtual-back-end/models"
-	"EleicoesVirtual-back-end/services"
 	"encoding/json"
 	"net/http"
 
+	"github.com/gaitolini/EleicoesVirtual-back-end/models"
+	"github.com/gaitolini/EleicoesVirtual-back-end/services"
 	"github.com/gorilla/mux"
 )
 
+// Cria uma eleição
 func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 	var novaEleicao models.Eleicao
 	err := json.NewDecoder(r.Body).Decode(&novaEleicao)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Erro ao decodificar o corpo da requisição", http.StatusBadRequest)
 		return
 	}
 
-	eleicao := services.CriarEleicao(novaEleicao)
+	_, err = services.CriarEleicao(novaEleicao)
+	if err != nil {
+		http.Error(w, "Erro ao criar a eleição", http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(eleicao)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição criada com sucesso"})
 }
 
+// Lista todas as eleições
 func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
-	lista := services.ListarEleicoes()
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(lista)
+	eleicoes, err := services.ListarEleicoes()
+	if err != nil {
+		http.Error(w, "Erro ao listar eleições", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(eleicoes)
 }
 
+// Obtém uma eleição por ID
 func ObterEleicao(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
-	eleicao, existe := services.ObterEleicao(id)
-	if !existe {
-		http.Error(w, "Eleição não encontrada", http.StatusNotFound)
+	eleicao, err := services.ObterEleicao(id)
+	if err != nil {
+		http.Error(w, "Erro ao obter a eleição", http.StatusNotFound)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(eleicao)
 }
 
+// Atualiza uma eleição por ID
 func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -50,28 +63,31 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	var eleicaoAtualizada models.Eleicao
 	err := json.NewDecoder(r.Body).Decode(&eleicaoAtualizada)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Erro ao decodificar o corpo da requisição", http.StatusBadRequest)
 		return
 	}
 
-	eleicao, existe := services.AtualizarEleicao(id, eleicaoAtualizada)
-	if !existe {
-		http.Error(w, "Eleição não encontrada", http.StatusNotFound)
+	err = services.AtualizarEleicao(id, eleicaoAtualizada)
+	if err != nil {
+		http.Error(w, "Erro ao atualizar a eleição", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(eleicao)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição atualizada com sucesso"})
 }
 
+// Deleta uma eleição por ID
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
 
-	if !services.DeletarEleicao(id) {
-		http.Error(w, "Eleição não encontrada", http.StatusNotFound)
+	err := services.DeletarEleicao(id)
+	if err != nil {
+		http.Error(w, "Erro ao deletar a eleição", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição deletada com sucesso"})
 }

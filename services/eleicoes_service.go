@@ -1,13 +1,44 @@
 package services
 
 import (
-	"EleicoesVirtual-back-end/models"
 	"context"
 	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+
+	"github.com/gaitolini/EleicoesVirtual-back-end/models"
+	"google.golang.org/api/option"
 )
+
+var client *firestore.Client
+
+// Inicializa o Firestore com a chave privada do Firebase
+func InitializeFirestoreClient() {
+	ctx := context.Background()
+
+	// Caminho para o arquivo JSON que você gerou
+	opt := option.WithCredentialsFile("eleicoesvirtual-firebase-adminsdk-baotz-0aff0096ad.json")
+
+	// Configurações do Firebase, incluindo o Project ID explicitamente
+	conf := &firebase.Config{ProjectID: "eleicoesvirtual"}
+
+	// Inicializa o app do Firebase
+	app, err := firebase.NewApp(ctx, conf, opt)
+	if err != nil {
+		log.Fatalf("Erro ao inicializar o Firebase App: %v", err)
+	}
+
+	// Cria o cliente Firestore
+	firestoreClient, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalf("Erro ao criar cliente Firestore: %v", err)
+	}
+
+	client = firestoreClient
+	fmt.Println("Firestore inicializado com sucesso!")
+}
 
 func CriarEleicao(novaEleicao models.Eleicao) (*firestore.DocumentRef, error) {
 	ctx := context.Background()
