@@ -12,15 +12,11 @@ RUN go mod tidy && go build -o eleicoes-backend
 
 # Criar uma imagem mínima para rodar o binário
 FROM alpine:latest
+
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
-# Copiar o binário construído na etapa anterior
-COPY --from=build /app/eleicoes-backend .
+COPY --from=build /app/eleicoes-backend /root/
 
-# Expor a porta 8080 para acesso externo
-EXPOSE 8080
-
-# Comando para executar o serviço
 CMD ["./eleicoes-backend"]
