@@ -1,0 +1,55 @@
+name: CI/CD Backend - EleicoesVirtual
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+
+      - name: Install Dependencies
+        run: go mod tidy
+
+      - name: Build
+        run: go build -o eleicoes-backend
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Copy Files via SSH
+        uses: appleboy/scp-action@v0.1.3
+        with:
+          host: ${{ secrets.AWS_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.AWS_SSH_KEY }}
+          source: "./"
+          target: "~/EleicoesVirtual-back-end/"
+
+      - name: Deploy Backend
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: ${{ secrets.AWS_EC2_IP }}
+          username: ec2-user
+          key: ${{ secrets.AWS_SSH_KEY }}
+          script: |
+            cd ~/EleicoesVirtual-back-end
+            sudo docker stop eleicoes-backend || true
+            sudo docker rm eleicoes-backend || true
+            sudo docker build -t eleicoes-backend .
+            sudo docker run -d -p 8080:8080 --name eleicoes-backend eleicoes-backend
