@@ -6,8 +6,8 @@ WORKDIR /app
 # Copiar os arquivos de código
 COPY . .
 
-# Construir o binário
-RUN go mod tidy && go build -o eleicoes-backend
+# Construir o binário de forma estática
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o eleicoes-backend
 
 # Usar uma imagem base mais leve para executar o binário
 FROM alpine:latest
