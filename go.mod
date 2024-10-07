@@ -1,3 +1,3 @@
-module github.com/gaitolini/eleicoesvirtual-backend
+module github.com/gaitolini/EleicoesVirtual-back-end
 
-go 1.22.3
+go 1.20
