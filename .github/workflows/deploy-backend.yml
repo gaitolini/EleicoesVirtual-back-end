@@ -1,4 +1,4 @@
-name: CI/CD Backend - EleicoesVirtual
+name: CI/CD Deploy Backend
 
 on:
   push:
@@ -6,51 +6,51 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repository
+      - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.19
+      # Build the Docker image
+      - name: Build Docker Image
+        run: |
+          docker build -t eleicoes-backend .
 
-      - name: Install Dependencies
-        run: go mod tidy
+      # Push Docker Image to Docker Hub (Opcional, se desejar armazenar a imagem)
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
+      #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build
-        run: go build -o eleicoes-backend
+      # - name: Push Docker Image
+      #   run: |
+      #     docker tag eleicoes-backend username/eleicoes-backend:latest
+      #     docker push username/eleicoes-backend:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v2
-
-      - name: Copy Files via SSH
+      # Deploy via SCP
+      - name: Copy Files via SCP
         uses: appleboy/scp-action@v0.1.3
         with:
-          host: ${{ secrets.AWS_EC2_IP }}
+          host: 3.101.81.146
           username: ec2-user
           key: ${{ secrets.AWS_SSH_KEY }}
           source: "./"
           target: "~/EleicoesVirtual-back-end/"
-          port: 22
 
-      - name: Deploy Backend
-        uses: appleboy/ssh-action@v0.1.2
+      # Run deployment commands via SSH
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.6
         with:
-          host: ${{ secrets.AWS_EC2_IP }}
+          host: 3.101.81.146
           username: ec2-user
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
-            cd ~/EleicoesVirtual-back-end
+            cd ~/EleicoesVirtual-back-end/
             sudo docker stop eleicoes-backend || true
             sudo docker rm eleicoes-backend || true
             sudo docker build -t eleicoes-backend .
             sudo docker run -d -p 8080:8080 --name eleicoes-backend eleicoes-backend
+
