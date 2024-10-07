@@ -40,6 +40,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           source: "./"
           target: "~/EleicoesVirtual-back-end/"
+          port: 22
 
       - name: Deploy Backend
         uses: appleboy/ssh-action@v0.1.2
