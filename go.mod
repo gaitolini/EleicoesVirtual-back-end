@@ -2,7 +2,7 @@ module github.com/gaitolini/EleicoesVirtual-back-end
 
 go 1.21
 
-toolchain go1.22.3
+// toolchain go1.22.3
 
 require (
 	cloud.google.com/go/firestore v1.17.0
