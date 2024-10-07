@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
-
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
 	"google.golang.org/api/option"
 )
@@ -18,14 +18,16 @@ var client *firestore.Client
 func InitializeFirestoreClient() {
 	ctx := context.Background()
 
-	// Caminho para o arquivo JSON que você gerou
-	opt := option.WithCredentialsFile("eleicoesvirtual-firebase-adminsdk-baotz-0aff0096ad.json")
+	// Obter o caminho do arquivo JSON de credenciais do Firebase a partir de uma variável de ambiente
+	credentialsFile := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if credentialsFile == "" {
+		log.Fatalf("Variável de ambiente GOOGLE_APPLICATION_CREDENTIALS não definida")
+	}
 
-	// Configurações do Firebase, incluindo o Project ID explicitamente
-	conf := &firebase.Config{ProjectID: "eleicoesvirtual"}
+	opt := option.WithCredentialsFile(credentialsFile)
 
 	// Inicializa o app do Firebase
-	app, err := firebase.NewApp(ctx, conf, opt)
+	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		log.Fatalf("Erro ao inicializar o Firebase App: %v", err)
 	}
