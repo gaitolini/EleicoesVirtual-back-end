@@ -1,26 +1,27 @@
-# Usar uma imagem base do Go para compilar o código
-FROM golang:1.19 as build
+# Usar a imagem base do Go
+FROM golang:1.19 AS build
 
+# Definir o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copiar os arquivos de código
+# Copiar o código do projeto para o contêiner
 COPY . .
 
-# Construir o binário de forma estática
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o eleicoes-backend
+# Baixar as dependências e compilar o binário
+RUN go mod tidy && go build -o eleicoes-backend
 
-# Usar uma imagem base mais leve para executar o binário
+# Criar uma imagem mínima para rodar o binário
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+# Configurar a variável de ambiente para o Firebase
+ENV GOOGLE_APPLICATION_CREDENTIALS=/root/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
 
-WORKDIR /root/
+# Copiar o binário e o arquivo de credenciais do Firebase para o contêiner
+COPY --from=build /app/eleicoes-backend /root/
+COPY --from=build /app/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /root/
 
-# Copiar o binário do estágio anterior
-COPY --from=build /app/eleicoes-backend .
-
-# Expor a porta 8080
+# Expor a porta em que o servidor irá rodar
 EXPOSE 8080
 
-# Comando para iniciar a aplicação
-CMD ["./eleicoes-backend"]
+# Comando para rodar o binário
+CMD ["/root/eleicoes-backend"]

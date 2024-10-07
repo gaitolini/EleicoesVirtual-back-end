@@ -1,25 +1,29 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	"os"
+
+	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
+	"github.com/gaitolini/EleicoesVirtual-back-end/services"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Bem-vindo ao EleicoesVirtual!")
-	})
+	// Inicializar o Firestore
+	services.InitializeFirestoreClient()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	// Configurar roteador
+	r := mux.NewRouter()
 
-	fmt.Printf("Servidor rodando na porta %s\n", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		fmt.Println("Erro ao iniciar o servidor:", err)
-	}
+	// Rotas para eleições
+	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods("POST")
+	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods("GET")
+	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods("GET")
+	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods("PUT")
+	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods("DELETE")
+
+	// Iniciar o servidor
+	log.Println("Servidor rodando na porta 8080")
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
-
-//New file
