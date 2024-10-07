@@ -1,65 +1,76 @@
-// services/eleicoes_service.go
 package services
 
 import (
 	"EleicoesVirtual-back-end/models"
-	"sync"
+	"context"
+	"fmt"
+	"log"
+
+	"cloud.google.com/go/firestore"
 )
 
-var (
-	eleicoes = make(map[string]models.Eleicao)
-	mu       sync.Mutex
-)
+func CriarEleicao(novaEleicao models.Eleicao) (*firestore.DocumentRef, error) {
+	ctx := context.Background()
 
-func CriarEleicao(novaEleicao models.Eleicao) models.Eleicao {
-	mu.Lock()
-	eleicoes[novaEleicao.ID] = novaEleicao
-	mu.Unlock()
-
-	return novaEleicao
-}
-
-func ListarEleicoes() []models.Eleicao {
-	mu.Lock()
-	defer mu.Unlock()
-
-	var lista []models.Eleicao
-	for _, eleicao := range eleicoes {
-		lista = append(lista, eleicao)
-	}
-	return lista
-}
-
-func ObterEleicao(id string) (models.Eleicao, bool) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	eleicao, existe := eleicoes[id]
-	return eleicao, existe
-}
-
-func AtualizarEleicao(id string, eleicaoAtualizada models.Eleicao) (models.Eleicao, bool) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	_, existe := eleicoes[id]
-	if !existe {
-		return models.Eleicao{}, false
+	_, err := client.Collection("eleicoes").Doc(novaEleicao.ID).Set(ctx, novaEleicao)
+	if err != nil {
+		log.Printf("Erro ao criar a eleição: %v", err)
+		return nil, err
 	}
 
-	eleicaoAtualizada.ID = id
-	eleicoes[id] = eleicaoAtualizada
-	return eleicaoAtualizada, true
+	fmt.Printf("Eleição %s criada com sucesso!\n", novaEleicao.Nome)
+	return client.Collection("eleicoes").Doc(novaEleicao.ID), nil
 }
 
-func DeletarEleicao(id string) bool {
-	mu.Lock()
-	defer mu.Unlock()
+func ListarEleicoes() ([]models.Eleicao, error) {
+	ctx := context.Background()
+	iter := client.Collection("eleicoes").Documents(ctx)
 
-	_, existe := eleicoes[id]
-	if existe {
-		delete(eleicoes, id)
-		return true
+	var eleicoes []models.Eleicao
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			break
+		}
+		var eleicao models.Eleicao
+		doc.DataTo(&eleicao)
+		eleicoes = append(eleicoes, eleicao)
 	}
-	return false
+
+	return eleicoes, nil
+}
+
+func ObterEleicao(id string) (models.Eleicao, error) {
+	ctx := context.Background()
+	doc, err := client.Collection("eleicoes").Doc(id).Get(ctx)
+	if err != nil {
+		return models.Eleicao{}, err
+	}
+
+	var eleicao models.Eleicao
+	doc.DataTo(&eleicao)
+
+	return eleicao, nil
+}
+
+func AtualizarEleicao(id string, eleicaoAtualizada models.Eleicao) error {
+	ctx := context.Background()
+
+	_, err := client.Collection("eleicoes").Doc(id).Set(ctx, eleicaoAtualizada)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeletarEleicao(id string) error {
+	ctx := context.Background()
+
+	_, err := client.Collection("eleicoes").Doc(id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
