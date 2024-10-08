@@ -24,6 +24,6 @@ func main() {
 	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods("DELETE")
 
 	// Iniciar o servidor
-	log.Println("Servidor rodando na porta 8080")
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Println("Servidor rodando na porta 8081")
+	log.Fatal(http.ListenAndServe(":8081", r))
 }
