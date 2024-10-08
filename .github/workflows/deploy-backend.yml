@@ -41,6 +41,7 @@ jobs:
           target: "~/EleicoesVirtual-back-end/"
 
       # Run deployment commands via SSH
+      # Run deployment commands via SSH
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -49,8 +50,13 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             cd ~/EleicoesVirtual-back-end/
-            sudo docker stop eleicoes-backend || true
-            sudo docker rm eleicoes-backend || true
+            # Verificar e remover contêiner anterior
+            if [ $(docker ps -q -f name=eleicoes-backend) ]; then
+              sudo docker stop eleicoes-backend
+              sudo docker rm eleicoes-backend
+            fi
+            # Build e run do novo contêiner
             sudo docker build -t eleicoes-backend .
-            sudo docker run -d -p 8080:8080 --name eleicoes-backend eleicoes-backend
+            sudo docker run -d -p 8081:8080 --name eleicoes-backend eleicoes-backend
+
 
