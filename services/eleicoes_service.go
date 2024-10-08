@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/option"
 )
 
+// Variável global para o Firestore
 var client *firestore.Client
 
 // Inicializa o Firestore com a chave privada do Firebase
