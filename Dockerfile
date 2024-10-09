@@ -7,7 +7,8 @@ WORKDIR /app
 COPY . .
 
 # Rodar go mod tidy e build com compilação estática
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go mod tidy && go build -o eleicoes-backend ./main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o eleicoes-backend ./main.go
+
 
 # Etapa final para criar uma imagem leve
 FROM alpine:latest
