@@ -16,7 +16,12 @@ jobs:
       # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker build -t eleicoes-backend .
+          docker build --no-cache -t eleicoes-backend .
+
+      # Limpar o sistema Docker após o build
+      - name: Clean Docker system
+        run: |
+          docker system prune -f --volumes
 
       # Deploy via SCP
       - name: Copy Files via SCP
@@ -28,7 +33,7 @@ jobs:
           source: "./"
           target: "/home/ec2-user/EleicoesVirtual-back-end/"
           debug: true
-    
+
       # Run deployment commands via SSH
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.6
@@ -45,4 +50,4 @@ jobs:
             fi
             # Build e run do novo contêiner
             sudo docker build -t eleicoes-backend .
-            sudo docker run -d -p 8081:8081 --name eleicoes-backend eleicoes-backend
+            sudo docker run -d -p 8081:8080 --name eleicoes-backend eleicoes-backend
