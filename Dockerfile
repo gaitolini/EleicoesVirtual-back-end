@@ -17,10 +17,10 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 # Copiar o binário gerado para a imagem final
-COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
+COPY --from=build /app/eleicoes-backend .
 
 # Copiar o arquivo de credenciais
-COPY /home/ec2-user/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
+COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
 
 # Definir a variável de ambiente para as credenciais do Firebase
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json"
