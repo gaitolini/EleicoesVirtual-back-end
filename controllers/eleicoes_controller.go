@@ -11,6 +11,8 @@ import (
 
 // Cria uma eleição
 func CriarEleicao(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	var novaEleicao models.Eleicao
 	err := json.NewDecoder(r.Body).Decode(&novaEleicao)
 	if err != nil {
@@ -18,18 +20,23 @@ func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = services.CriarEleicao(novaEleicao)
+	_, idGerado, err := services.CriarEleicao(novaEleicao)
 	if err != nil {
 		http.Error(w, "Erro ao criar a eleição", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição criada com sucesso"})
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Eleição criada com sucesso",
+		"id":      idGerado, // Retorna o ID gerado
+	})
 }
 
 // Lista todas as eleições
 func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
 	eleicoes, err := services.ListarEleicoes()
 	if err != nil {
 		http.Error(w, "Erro ao listar eleições", http.StatusInternalServerError)

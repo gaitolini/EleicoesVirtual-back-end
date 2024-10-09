@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
+	"github.com/google/uuid"
 	"google.golang.org/api/option"
 )
 
@@ -43,18 +45,31 @@ func InitializeFirestoreClient() {
 	fmt.Println("Firestore inicializado com sucesso!")
 }
 
-func CriarEleicao(novaEleicao models.Eleicao) (*firestore.DocumentRef, error) {
+func CriarEleicao(novaEleicao models.Eleicao) (*firestore.DocumentRef, string, error) {
 	ctx := context.Background()
 
-	// Usar Add para que o Firestore gere automaticamente o ID
-	docRef, _, err := client.Collection("eleicoes").Add(ctx, novaEleicao)
-	if err != nil {
-		log.Printf("Erro ao criar a eleição: %v", err)
-		return nil, err
+	// Gerar um ID aleatório, se estiver vazio
+	if novaEleicao.ID == "" {
+		novaEleicao.ID = uuid.New().String() // Gera um UUID
 	}
 
-	fmt.Printf("Eleição %s criada com sucesso!\n", novaEleicao.Nome)
-	return docRef, nil
+	// Verificar se as datas estão vazias e preencher com uma data padrão, se necessário
+	if novaEleicao.DataInicio.IsZero() {
+		novaEleicao.DataInicio = time.Now()
+	}
+	if novaEleicao.DataFim.IsZero() {
+		novaEleicao.DataFim = time.Now().AddDate(0, 3, 0)
+	}
+
+	// Criar o documento no Firestore
+	_, err := client.Collection("eleicoes").Doc(novaEleicao.ID).Set(ctx, novaEleicao)
+	if err != nil {
+		log.Printf("Erro ao criar a eleição: %v", err)
+		return nil, "", err
+	}
+
+	log.Printf("Eleição %s criada com sucesso!", novaEleicao.Nome)
+	return client.Collection("eleicoes").Doc(novaEleicao.ID), novaEleicao.ID, nil
 }
 
 func ListarEleicoes() ([]models.Eleicao, error) {
@@ -99,13 +114,19 @@ func AtualizarEleicao(id string, eleicaoAtualizada models.Eleicao) error {
 	return nil
 }
 
+// Deletar uma eleição
 func DeletarEleicao(id string) error {
 	ctx := context.Background()
 
+	log.Printf("Tentando deletar a eleição com ID: %s", id)
+
+	// Realizar a deleção no Firestore
 	_, err := client.Collection("eleicoes").Doc(id).Delete(ctx)
 	if err != nil {
+		log.Printf("Erro ao deletar a eleição com ID %s: %v", id, err)
 		return err
 	}
 
+	log.Printf("Eleição com ID %s deletada com sucesso", id)
 	return nil
 }
