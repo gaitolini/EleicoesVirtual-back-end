@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
@@ -10,6 +11,14 @@ import (
 )
 
 func main() {
+
+	_, err := os.Stat(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	if err != nil {
+		log.Fatalf("Erro ao acessar o arquivo de credenciais: %v", err)
+	} else {
+		log.Println("Arquivo de credenciais encontrado com sucesso!")
+	}
+
 	// Inicializar o Firestore
 	services.InitializeFirestoreClient()
 
