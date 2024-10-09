@@ -16,7 +16,7 @@ jobs:
       # Cria o arquivo JSON a partir do segredo
       - name: Create Firebase Credentials File
         run: |
-          echo ${{ secrets.FIREBASE_CREDENTIALS_BASE64 }} | base64 --decode > eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
+          echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 --decode > eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
 
       # Build the Docker image
       - name: Build Docker Image
