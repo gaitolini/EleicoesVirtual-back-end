@@ -19,8 +19,9 @@ RUN apk --no-cache add ca-certificates
 # Copiar o binário gerado para a imagem final
 COPY --from=build /app/eleicoes-backend .
 
-# Copiar o arquivo de credenciais
-COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
+# Copiar o arquivo de credenciais somente se existir
+# Isso vai ignorar a cópia se o arquivo não estiver presente (como no GitHub Actions)
+COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/ || echo "Arquivo de credenciais não encontrado, ignorando cópia."
 
 # Definir a variável de ambiente para as credenciais do Firebase
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
