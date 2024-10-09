@@ -21,7 +21,7 @@ jobs:
       # Criar arquivo de credenciais a partir do Base64
       - name: Create Firebase Credentials File
         run: |
-          echo ${{ secrets.FIREBASE_CREDENTIALS_BASE64 }} | base64 --decode > eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
+          echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 --decode > eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
 
       # Deploy via SCP
       - name: Copy Files via SCP
