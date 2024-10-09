@@ -6,26 +6,26 @@ WORKDIR /app
 # Copiar o código para o contêiner
 COPY . .
 
-# Rodar go mod tidy e build com compilação estática
+# Rodar go mod tidy e compilar o projeto
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go mod tidy && go build -o eleicoes-backend ./main.go
 
 # Etapa final para criar uma imagem leve
 FROM alpine:latest
-WORKDIR /app/
+WORKDIR /app
 
-# Instalar ca-certificates, necessário para chamadas HTTPS do Go
+# Instalar ca-certificates para HTTPS
 RUN apk --no-cache add ca-certificates
-
-# Criar o diretório para as credenciais
-RUN mkdir -p /app/credentials
 
 # Copiar o binário gerado para a imagem final
 COPY --from=build /app/eleicoes-backend .
 
-# Definir a variável de ambiente para as credenciais do Firebase
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
+# Copiar o arquivo de credenciais
+COPY /home/ec2-user/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
 
-# Definir a porta que a aplicação vai escutar (opcional, para documentação)
+# Definir a variável de ambiente para as credenciais do Firebase
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json"
+
+# Expor a porta 8081
 EXPOSE 8081
 
 # Comando para rodar o binário
