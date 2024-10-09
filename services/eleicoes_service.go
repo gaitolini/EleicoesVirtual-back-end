@@ -46,14 +46,15 @@ func InitializeFirestoreClient() {
 func CriarEleicao(novaEleicao models.Eleicao) (*firestore.DocumentRef, error) {
 	ctx := context.Background()
 
-	_, err := client.Collection("eleicoes").Doc(novaEleicao.ID).Set(ctx, novaEleicao)
+	// Usar Add para que o Firestore gere automaticamente o ID
+	docRef, _, err := client.Collection("eleicoes").Add(ctx, novaEleicao)
 	if err != nil {
 		log.Printf("Erro ao criar a eleição: %v", err)
 		return nil, err
 	}
 
 	fmt.Printf("Eleição %s criada com sucesso!\n", novaEleicao.Nome)
-	return client.Collection("eleicoes").Doc(novaEleicao.ID), nil
+	return docRef, nil
 }
 
 func ListarEleicoes() ([]models.Eleicao, error) {
