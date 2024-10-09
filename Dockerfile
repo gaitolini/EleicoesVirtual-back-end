@@ -17,7 +17,7 @@ WORKDIR /app
 RUN apk --no-cache add ca-certificates
 
 # Copiar o binário gerado para a imagem final
-COPY --from=build /app/eleicoes-backend .
+COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
 
 # Copiar o arquivo de credenciais
 COPY /home/ec2-user/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/
