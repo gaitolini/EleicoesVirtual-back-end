@@ -36,3 +36,5 @@ func main() {
 	log.Println("Servidor rodando na porta 8081")
 	log.Fatal(http.ListenAndServe(":8081", r))
 }
+
+//Testando o CI-CD
