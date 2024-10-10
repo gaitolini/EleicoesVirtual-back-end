@@ -25,6 +25,10 @@ func main() {
 	// Configurar roteador
 	r := mux.NewRouter()
 
+	// Rotas para autenticação
+	r.HandleFunc("/signup", controllers.Signup).Methods("POST")
+	r.HandleFunc("/login", controllers.Login).Methods("POST")
+
 	// Rotas para eleições
 	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods("POST")
 	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods("GET")
