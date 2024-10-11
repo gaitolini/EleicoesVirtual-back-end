@@ -1,5 +1,5 @@
 # Etapa de build para compilar o projeto Go
-FROM golang:1.22-alpine AS build
+FROM golang:1.22 AS build
 
 # Definir o diretório de trabalho
 WORKDIR /app
@@ -29,7 +29,7 @@ RUN apk --no-cache add ca-certificates
 COPY --from=build /app/eleicoes-backend .
 
 # Copiar o arquivo de credenciais se estiver disponível
-COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/ || echo "Arquivo de credenciais não encontrado, ignorando cópia."
+#COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/ || echo "Arquivo de credenciais não encontrado, ignorando cópia."
 
 # Definir a variável de ambiente para as credenciais do Firebase
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
