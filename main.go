@@ -21,10 +21,10 @@ func main() {
 	// Inicializar o cliente Firestore
 	services.InitializeFirestoreClient(string(file))
 
+	// Definir o ambiente como "development" para testes locais
 	os.Setenv("ENVIRONMENT", "development") // apenas para testes locais, remova em produção
 
 	// Configurar as rotas
-	http.HandleFunc("/eleicoes", middleware.Auth(controllers.HandleEleicoes))
 	http.HandleFunc("/eleicoes/criar", middleware.Auth(controllers.CriarEleicao))
 	http.HandleFunc("/eleicoes/listar", middleware.Auth(controllers.ListarEleicoes))
 	http.HandleFunc("/eleicoes/atualizar", middleware.Auth(controllers.AtualizarEleicao))

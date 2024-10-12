@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/firestore v1.17.0
 	firebase.google.com/go v3.13.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/gorilla/mux v1.8.1
 	google.golang.org/api v0.196.0
 )
 

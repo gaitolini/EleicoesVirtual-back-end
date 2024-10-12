@@ -3,30 +3,14 @@ package controllers
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
 	"github.com/gaitolini/EleicoesVirtual-back-end/utils"
+	"github.com/gorilla/mux"
 )
 
-// HandleEleicoes é responsável por lidar com todas as operações CRUD relacionadas a eleições
-func HandleEleicoes(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		ListarEleicoes(w, r)
-	case http.MethodPost:
-		CriarEleicao(w, r)
-	case http.MethodPut:
-		AtualizarEleicao(w, r)
-	case http.MethodDelete:
-		DeletarEleicao(w, r)
-	default:
-		http.Error(w, "Método não suportado", http.StatusMethodNotAllowed)
-	}
-}
-
-// CriarEleicao lida com a criação de uma nova eleição
+// CriarEleicao cria uma nova eleição
 func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 	var novaEleicao models.Eleicao
 	if err := json.NewDecoder(r.Body).Decode(&novaEleicao); err != nil {
@@ -34,18 +18,20 @@ func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := services.CriarEleicao(novaEleicao); err != nil {
+	id, err := services.CriarEleicao(novaEleicao)
+	if err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
+	novaEleicao.ID = id
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(novaEleicao); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 	}
 }
 
-// ListarEleicoes lida com a listagem de eleições
+// ListarEleicoes lista todas as eleições
 func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 	eleicoes, err := services.ListarEleicoes()
 	if err != nil {
@@ -59,18 +45,31 @@ func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AtualizarEleicao lida com a atualização de uma eleição existente
-func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
-	var eleicaoAtualizada models.Eleicao
-	if err := json.NewDecoder(r.Body).Decode(&eleicaoAtualizada); err != nil {
-		utils.HandleError(w, err, http.StatusBadRequest)
+// ObterEleicao obtém uma eleição específica
+func ObterEleicao(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	eleicao, err := services.ObterEleicao(id)
+	if err != nil {
+		utils.HandleError(w, err, http.StatusNotFound)
 		return
 	}
 
-	// Extrair o ID da eleição a ser atualizada
-	id := r.URL.Query().Get("id")
-	if strings.TrimSpace(id) == "" {
-		http.Error(w, "ID da eleição é obrigatório", http.StatusBadRequest)
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(eleicao); err != nil {
+		utils.HandleError(w, err, http.StatusInternalServerError)
+	}
+}
+
+// AtualizarEleicao atualiza uma eleição existente
+func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	var eleicaoAtualizada models.Eleicao
+	if err := json.NewDecoder(r.Body).Decode(&eleicaoAtualizada); err != nil {
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -80,25 +79,17 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(eleicaoAtualizada); err != nil {
-		utils.HandleError(w, err, http.StatusInternalServerError)
-	}
 }
 
-// DeletarEleicao lida com a exclusão de uma eleição existente
+// DeletarEleicao deleta uma eleição específica
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
-	// Extrair o ID da eleição a ser deletada
-	id := r.URL.Query().Get("id")
-	if strings.TrimSpace(id) == "" {
-		http.Error(w, "ID da eleição é obrigatório", http.StatusBadRequest)
-		return
-	}
+	vars := mux.Vars(r)
+	id := vars["id"]
 
 	if err := services.DeletarEleicao(id); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Eleição deletada com sucesso"))
+	w.WriteHeader(http.StatusNoContent)
 }
