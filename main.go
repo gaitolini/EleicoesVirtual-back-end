@@ -1,44 +1,39 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
+	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
-	"github.com/gorilla/mux"
 )
 
 func main() {
-
-	_, err := os.Stat(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	// Ler o arquivo de configuração JSON do Firebase
+	file, err := ioutil.ReadFile("firebaseConfig.json")
 	if err != nil {
-		log.Fatalf("Erro ao acessar o arquivo de credenciais: %v", err)
-	} else {
-		log.Println("Arquivo de credenciais encontrado com sucesso!")
+		log.Fatalf("Erro ao ler o arquivo firebaseConfig.json: %v", err)
 	}
 
-	// Inicializar o Firestore
-	services.InitializeFirestoreClient()
+	// Inicializar o cliente Firestore
+	services.InitializeFirestoreClient(string(file))
 
-	// Configurar roteador
-	r := mux.NewRouter()
+	os.Setenv("ENVIRONMENT", "development") // apenas para testes locais, remova em produção
 
-	// Rotas para autenticação
-	r.HandleFunc("/signup", controllers.Signup).Methods("POST")
-	r.HandleFunc("/login", controllers.Login).Methods("POST")
+	// Configurar as rotas
+	http.HandleFunc("/eleicoes", middleware.Auth(controllers.HandleEleicoes))
+	http.HandleFunc("/eleicoes/criar", middleware.Auth(controllers.CriarEleicao))
+	http.HandleFunc("/eleicoes/listar", middleware.Auth(controllers.ListarEleicoes))
+	http.HandleFunc("/eleicoes/atualizar", middleware.Auth(controllers.AtualizarEleicao))
+	http.HandleFunc("/eleicoes/deletar", middleware.Auth(controllers.DeletarEleicao))
 
-	// Rotas para eleições
-	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods("POST")
-	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods("GET")
-	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods("GET")
-	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods("PUT")
-	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods("DELETE")
-
-	// Iniciar o servidor
-	log.Println("Servidor rodando na porta 8081")
-	log.Fatal(http.ListenAndServe(":8081", r))
+	// Iniciar o servidor HTTP
+	port := ":8081"
+	log.Printf("Iniciando servidor na porta %s...", port)
+	if err := http.ListenAndServe(port, nil); err != nil {
+		log.Fatalf("Erro ao iniciar o servidor: %v", err)
+	}
 }
-
-//Testando o CI-CD
