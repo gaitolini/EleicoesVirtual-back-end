@@ -80,21 +80,11 @@ func AtualizarEleicao(id string, eleicao models.Eleicao) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := Client.Collection("eleicoes").Doc(id).Set(ctx, eleicao)
-	if err != nil {
-		log.Printf("Erro ao atualizar eleição: %v", err)
-	}
-	return err
-}
-
-// DeletarEleicao remove uma eleição do Firestore
-func DeletarEleicao(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	// Verificar se o documento existe antes de tentar deletar
+	// Referência ao documento
 	docRef := Client.Collection("eleicoes").Doc(id)
-	_, err := docRef.Get(ctx) // Apenas verificar se o documento existe
+
+	// Verificar se o documento existe
+	doc, err := docRef.Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			log.Printf("Erro: Eleição com ID %s não encontrada.", id)
@@ -104,12 +94,46 @@ func DeletarEleicao(id string) error {
 		return err
 	}
 
-	// Deletar o documento caso ele exista
+	log.Printf("Documento encontrado: %v", doc.Ref.ID)
+
+	// Atualizar o documento
+	_, err = docRef.Set(ctx, eleicao)
+	if err != nil {
+		log.Printf("Erro ao atualizar eleição: %v", err)
+		return err
+	}
+
+	log.Printf("Eleição com ID %s atualizada com sucesso.", id)
+	return nil
+}
+
+// DeletarEleicao remove uma eleição do Firestore
+// DeletarEleicao remove uma eleição do Firestore
+func DeletarEleicao(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Referência ao documento a ser deletado
+	docRef := Client.Collection("eleicoes").Doc(id)
+
+	// Verificar se o documento existe antes de tentar deletar
+	_, err := docRef.Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			log.Printf("Erro: Eleição com ID %s não encontrada.", id)
+			return fmt.Errorf("Eleição com ID %s não encontrada", id)
+		}
+		log.Printf("Erro ao buscar eleição: %v", err)
+		return err
+	}
+
+	// Deletar o documento
 	_, err = docRef.Delete(ctx)
 	if err != nil {
 		log.Printf("Erro ao deletar eleição: %v", err)
 		return err
 	}
+
 	log.Printf("Eleição com ID %s deletada com sucesso.", id)
 	return nil
 }

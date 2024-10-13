@@ -12,6 +12,7 @@ import (
 // Auth é um middleware que verifica o token de autenticação na requisição
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Autenticando a rota: %s %s", r.Method, r.URL.Path)
 		// Verificar se estamos em ambiente de desenvolvimento
 		if os.Getenv("ENVIRONMENT") == "development" {
 			log.Println("Ambiente de desenvolvimento detectado. Ignorando autenticação.")

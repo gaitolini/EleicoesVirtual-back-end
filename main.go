@@ -25,12 +25,17 @@ func main() {
 	// Definir o ambiente como "development" para testes locais
 	os.Setenv("ENVIRONMENT", "development") // apenas para testes locais, remova em produção
 
-	// Configurar as rotas usando mux
+	// Configurar as rotas usando o mux
 	r := mux.NewRouter()
-	r.HandleFunc("/eleicoes/criar", middleware.Auth(controllers.CriarEleicao)).Methods("POST")
-	r.HandleFunc("/eleicoes/listar", middleware.Auth(controllers.ListarEleicoes)).Methods("GET")
-	r.HandleFunc("/eleicoes/atualizar", middleware.Auth(controllers.AtualizarEleicao)).Methods("PUT")
-	r.HandleFunc("/eleicoes/deletar/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods("DELETE")
+
+	// Registrar rotas CRUD para eleições
+	r.HandleFunc("/eleicoes", middleware.Auth(controllers.CriarEleicao)).Methods(http.MethodPost)
+	r.HandleFunc("/eleicoes", middleware.Auth(controllers.ListarEleicoes)).Methods(http.MethodGet)
+	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.AtualizarEleicao)).Methods(http.MethodPut)
+	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods(http.MethodDelete)
+
+	// Registrar log para todas as requisições
+	r.Use(loggingMiddleware)
 
 	// Iniciar o servidor HTTP
 	port := ":8081"
@@ -38,4 +43,12 @@ func main() {
 	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
+}
+
+// Middleware para logar todas as requisições HTTP
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Recebendo solicitação: %s %s", r.Method, r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
 }

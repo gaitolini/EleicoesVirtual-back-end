@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
@@ -63,10 +64,10 @@ func ObterEleicao(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AtualizarEleicao atualiza uma eleição existente
+// AtualizarEleicao lida com a atualização de uma eleição existente
 func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+	// Log para diagnóstico
+	log.Println("Entrando no controlador de AtualizarEleicao")
 
 	var eleicaoAtualizada models.Eleicao
 	if err := json.NewDecoder(r.Body).Decode(&eleicaoAtualizada); err != nil {
@@ -74,35 +75,42 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Obter o ID da eleição a partir dos parâmetros da URL
+	vars := mux.Vars(r)
+	id := vars["id"]
+
+	// Verificar se o ID foi realmente obtido
+	if id == "" {
+		utils.HandleError(w, nil, http.StatusBadRequest)
+		return
+	}
+
+	// Atualizar a eleição usando o serviço
 	if err := services.AtualizarEleicao(id, eleicaoAtualizada); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(eleicaoAtualizada); err != nil {
+		utils.HandleError(w, err, http.StatusInternalServerError)
+	}
 }
 
 // DeletarEleicao lida com a exclusão de uma eleição existente
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
-	// Obter o ID da eleição a ser deletada
-	id := r.URL.Path[len("/eleicoes/deletar/"):]
+	id := mux.Vars(r)["id"] // Extraindo o ID da URL
 	if id == "" {
-		utils.HandleError(w, fmt.Errorf("ID da eleição não fornecido"), http.StatusBadRequest)
+		http.Error(w, "ID não fornecido", http.StatusBadRequest)
 		return
 	}
 
-	// Chamar o serviço para deletar a eleição
 	err := services.DeletarEleicao(id)
 	if err != nil {
-		if err.Error() == fmt.Sprintf("Eleição com ID %s não encontrada", id) {
-			utils.HandleError(w, err, http.StatusNotFound)
-		} else {
-			utils.HandleError(w, err, http.StatusInternalServerError)
-		}
+		http.Error(w, fmt.Sprintf("Erro ao deletar a eleição: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	// Retornar sucesso se a eleição for deletada
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição deletada com sucesso"})
+	w.Write([]byte(fmt.Sprintf("Eleição com ID %s deletada com sucesso.", id)))
 }
