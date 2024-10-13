@@ -7,8 +7,8 @@ WORKDIR /app
 # Copiar o go.mod e go.sum para evitar refazer o download das dependências em cada build
 COPY go.mod go.sum ./
 
-# Rodar go mod tidy para limpar e instalar dependências
-RUN go mod tidy
+# Rodar go mod download para baixar as dependências
+RUN go mod download
 
 # Copiar o restante do código para o contêiner
 COPY . .
@@ -28,11 +28,11 @@ RUN apk --no-cache add ca-certificates
 # Copiar o binário gerado na etapa de build para a imagem final
 COPY --from=build /app/eleicoes-backend .
 
-# Copiar o arquivo de credenciais se estiver disponível
-#COPY eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json /app/credentials/ || echo "Arquivo de credenciais não encontrado, ignorando cópia."
+# Copiar o arquivo de credenciais
+COPY firebaseConfig.json /app/credentials/firebaseConfig.json
 
 # Definir a variável de ambiente para as credenciais do Firebase
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/eleicoesvirtual-firebase-adminsdk-baotz-3973687bb4.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/firebaseConfig.json
 
 # Limpar o cache do apk para economizar espaço (otimização extra)
 RUN rm -rf /var/cache/apk/*
