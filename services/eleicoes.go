@@ -2,11 +2,14 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
 	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // CriarEleicao cria uma nova eleição no Firestore
@@ -89,9 +92,24 @@ func DeletarEleicao(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	_, err := Client.Collection("eleicoes").Doc(id).Delete(ctx)
+	// Verificar se o documento existe antes de tentar deletar
+	docRef := Client.Collection("eleicoes").Doc(id)
+	_, err := docRef.Get(ctx) // Apenas verificar se o documento existe
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			log.Printf("Erro: Eleição com ID %s não encontrada.", id)
+			return fmt.Errorf("Eleição com ID %s não encontrada", id)
+		}
+		log.Printf("Erro ao buscar eleição: %v", err)
+		return err
+	}
+
+	// Deletar o documento caso ele exista
+	_, err = docRef.Delete(ctx)
 	if err != nil {
 		log.Printf("Erro ao deletar eleição: %v", err)
+		return err
 	}
-	return err
+	log.Printf("Eleição com ID %s deletada com sucesso.", id)
+	return nil
 }

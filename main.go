@@ -9,6 +9,7 @@ import (
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -24,16 +25,17 @@ func main() {
 	// Definir o ambiente como "development" para testes locais
 	os.Setenv("ENVIRONMENT", "development") // apenas para testes locais, remova em produção
 
-	// Configurar as rotas
-	http.HandleFunc("/eleicoes/criar", middleware.Auth(controllers.CriarEleicao))
-	http.HandleFunc("/eleicoes/listar", middleware.Auth(controllers.ListarEleicoes))
-	http.HandleFunc("/eleicoes/atualizar", middleware.Auth(controllers.AtualizarEleicao))
-	http.HandleFunc("/eleicoes/deletar", middleware.Auth(controllers.DeletarEleicao))
+	// Configurar as rotas usando mux
+	r := mux.NewRouter()
+	r.HandleFunc("/eleicoes/criar", middleware.Auth(controllers.CriarEleicao)).Methods("POST")
+	r.HandleFunc("/eleicoes/listar", middleware.Auth(controllers.ListarEleicoes)).Methods("GET")
+	r.HandleFunc("/eleicoes/atualizar", middleware.Auth(controllers.AtualizarEleicao)).Methods("PUT")
+	r.HandleFunc("/eleicoes/deletar/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods("DELETE")
 
 	// Iniciar o servidor HTTP
 	port := ":8081"
 	log.Printf("Iniciando servidor na porta %s...", port)
-	if err := http.ListenAndServe(port, nil); err != nil {
+	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }

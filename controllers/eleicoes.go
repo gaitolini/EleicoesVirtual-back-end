@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/models"
@@ -81,15 +82,27 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// DeletarEleicao deleta uma eleição específica
+// DeletarEleicao lida com a exclusão de uma eleição existente
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
-
-	if err := services.DeletarEleicao(id); err != nil {
-		utils.HandleError(w, err, http.StatusInternalServerError)
+	// Obter o ID da eleição a ser deletada
+	id := r.URL.Path[len("/eleicoes/deletar/"):]
+	if id == "" {
+		utils.HandleError(w, fmt.Errorf("ID da eleição não fornecido"), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	// Chamar o serviço para deletar a eleição
+	err := services.DeletarEleicao(id)
+	if err != nil {
+		if err.Error() == fmt.Sprintf("Eleição com ID %s não encontrada", id) {
+			utils.HandleError(w, err, http.StatusNotFound)
+		} else {
+			utils.HandleError(w, err, http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Retornar sucesso se a eleição for deletada
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Eleição deletada com sucesso"})
 }
