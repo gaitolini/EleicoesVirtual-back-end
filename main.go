@@ -33,6 +33,7 @@ func main() {
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.ListarEleicoes)).Methods(http.MethodGet)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.AtualizarEleicao)).Methods(http.MethodPut)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods(http.MethodDelete)
+	r.HandleFunc("/eleicoes/obter/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)
