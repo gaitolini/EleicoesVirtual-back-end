@@ -9,6 +9,7 @@ import (
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
+	"github.com/gorilla/handlers" // Importando o pacote gorilla/handlers
 	"github.com/gorilla/mux"
 )
 
@@ -31,17 +32,22 @@ func main() {
 	// Registrar rotas CRUD para eleições
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.CriarEleicao)).Methods(http.MethodPost)
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.ListarEleicoes)).Methods(http.MethodGet)
-	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.AtualizarEleicao)).Methods(http.MethodPut)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods(http.MethodDelete)
+	r.HandleFunc("/eleicoes/obter/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)
 
-	// Iniciar o servidor HTTP
+	// Adicionar suporte ao CORS usando handlers
+	corsAllowedOrigins := handlers.AllowedOrigins([]string{"http://localhost:3000", "https://api.gaitolini.com.br"})
+	corsAllowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
+	corsAllowedHeaders := handlers.AllowedHeaders([]string{"Authorization", "Content-Type"})
+
+	// Iniciar o servidor HTTP com middleware de CORS
 	port := ":8081"
 	log.Printf("Iniciando servidor na porta %s...", port)
-	if err := http.ListenAndServe(port, r); err != nil {
+	if err := http.ListenAndServe(port, handlers.CORS(corsAllowedOrigins, corsAllowedMethods, corsAllowedHeaders)(r)); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }
