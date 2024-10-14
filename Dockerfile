@@ -28,11 +28,11 @@ RUN apk --no-cache add ca-certificates
 # Copiar o binário gerado na etapa de build para a imagem final
 COPY --from=build /app/eleicoes-backend .
 
-# Copiar o arquivo de credenciais se estiver disponível
-COPY firebaseConfig.json /app/credentials/firebaseConfig.json
+# Copiar o arquivo firebaseConfig.json para o diretório de trabalho
+COPY firebaseConfig.json ./firebaseConfig.json
 
-# Definir a variável de ambiente para as credenciais do Firebase
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/firebaseConfig.json
+# Definir a variável de ambiente para as credenciais do Firebase (caso precise)
+ENV GOOGLE_APPLICATION_CREDENTIALS=/app/firebaseConfig.json
 
 # Comando para rodar o binário
 CMD ["./eleicoes-backend"]
