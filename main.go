@@ -1,5 +1,3 @@
-package main
-
 import (
 	"io/ioutil"
 	"log"
@@ -9,7 +7,6 @@ import (
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
 	"github.com/gaitolini/EleicoesVirtual-back-end/services"
-	"github.com/gorilla/handlers" // Importando o pacote gorilla/handlers
 	"github.com/gorilla/mux"
 )
 
@@ -29,25 +26,23 @@ func main() {
 	// Configurar as rotas usando o mux
 	r := mux.NewRouter()
 
+	// Middleware para adicionar cabeçalhos CORS manualmente
+	r.Use(corsMiddleware)
+
 	// Registrar rotas CRUD para eleições
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.CriarEleicao)).Methods(http.MethodPost)
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.ListarEleicoes)).Methods(http.MethodGet)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.AtualizarEleicao)).Methods(http.MethodPut)
 	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods(http.MethodDelete)
-	r.HandleFunc("/eleicoes/obter/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
+	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)
 
-	// Adicionar suporte ao CORS usando handlers
-	corsAllowedOrigins := handlers.AllowedOrigins([]string{"http://localhost:3000", "https://api.gaitolini.com.br"})
-	corsAllowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
-	corsAllowedHeaders := handlers.AllowedHeaders([]string{"Authorization", "Content-Type"})
-
-	// Iniciar o servidor HTTP com middleware de CORS
+	// Iniciar o servidor HTTP
 	port := ":8081"
 	log.Printf("Iniciando servidor na porta %s...", port)
-	if err := http.ListenAndServe(port, handlers.CORS(corsAllowedOrigins, corsAllowedMethods, corsAllowedHeaders)(r)); err != nil {
+	if err := http.ListenAndServe(port, r); err != nil {
 		log.Fatalf("Erro ao iniciar o servidor: %v", err)
 	}
 }
@@ -56,6 +51,24 @@ func main() {
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Recebendo solicitação: %s %s", r.Method, r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
+}
+
+// Middleware para adicionar cabeçalhos CORS manualmente
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Handle preflight requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
