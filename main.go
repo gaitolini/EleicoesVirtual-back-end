@@ -29,7 +29,7 @@ func main() {
 	r := mux.NewRouter()
 
 	// Middleware para adicionar cabeçalhos CORS manualmente
-	r.Use(corsMiddleware)
+	r.Use(middleware.CorsMiddleware)
 
 	// Registrar rotas CRUD para eleições
 	r.HandleFunc("/eleicoes", middleware.Auth(controllers.CriarEleicao)).Methods(http.MethodPost)
@@ -53,24 +53,6 @@ func main() {
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Recebendo solicitação: %s %s", r.Method, r.RequestURI)
-		next.ServeHTTP(w, r)
-	})
-}
-
-// Middleware para adicionar cabeçalhos CORS manualmente
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-		// Handle preflight requests
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
 		next.ServeHTTP(w, r)
 	})
 }
