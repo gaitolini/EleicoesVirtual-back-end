@@ -6,7 +6,7 @@ import (
 )
 
 // Middleware para adicionar cabeçalhos CORS manualmente
-func corsMiddleware(next http.Handler) http.Handler {
+func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("CORS Middleware ativado para %s %s", r.Method, r.URL.Path)
 
