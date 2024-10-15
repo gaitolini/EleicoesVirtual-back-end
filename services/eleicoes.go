@@ -108,7 +108,6 @@ func AtualizarEleicao(id string, eleicao models.Eleicao) error {
 }
 
 // DeletarEleicao remove uma eleição do Firestore
-// DeletarEleicao remove uma eleição do Firestore
 func DeletarEleicao(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

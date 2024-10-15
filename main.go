@@ -31,12 +31,12 @@ func main() {
 	// Middleware para adicionar cabeçalhos CORS manualmente
 	r.Use(middleware.CorsMiddleware)
 
-	// Registrar rotas CRUD para eleições
-	r.HandleFunc("/eleicoes", middleware.Auth(controllers.CriarEleicao)).Methods(http.MethodPost)
-	r.HandleFunc("/eleicoes", middleware.Auth(controllers.ListarEleicoes)).Methods(http.MethodGet)
-	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.AtualizarEleicao)).Methods(http.MethodPut)
-	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.DeletarEleicao)).Methods(http.MethodDelete)
-	r.HandleFunc("/eleicoes/{id}", middleware.Auth(controllers.ObterEleicao)).Methods(http.MethodGet)
+	// Registrar rotas CRUD para eleições (removendo o uso de Auth)
+	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost)
+	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet)
+	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods(http.MethodPut)
+	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods(http.MethodDelete)
+	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods(http.MethodGet)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)
