@@ -13,6 +13,14 @@ import (
 func Auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Autenticando a rota: %s %s", r.Method, r.URL.Path)
+
+		// Permitir requisições OPTIONS sem autenticação
+		if r.Method == http.MethodOptions {
+			log.Println("Requisição OPTIONS recebida. Autenticação ignorada.")
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		// Verificar se estamos em ambiente de desenvolvimento
 		if os.Getenv("ENVIRONMENT") == "development" {
 			log.Println("Ambiente de desenvolvimento detectado. Ignorando autenticação.")
@@ -53,11 +61,4 @@ func Auth(next http.HandlerFunc) http.HandlerFunc {
 		// Caso o token seja válido, prosseguir com a requisição
 		next.ServeHTTP(w, r)
 	}
-}
-
-// isValidToken verifica se o token é válido usando JWT (agora substituído pela lógica de validação no middleware)
-func isValidToken(token string) bool {
-	// Esta função agora é substituída pela validação JWT dentro do middleware
-	log.Println("Função isValidToken obsoleta - use a validação JWT no middleware Auth")
-	return false
 }
