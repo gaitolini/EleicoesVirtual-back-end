@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
@@ -22,9 +21,6 @@ func main() {
 	// Inicializar o cliente Firestore
 	services.InitializeFirestoreClient(string(file))
 
-	// Definir o ambiente como "development" para testes locais
-	os.Setenv("ENVIRONMENT", "development") // apenas para testes locais, remova em produção
-
 	// Configurar as rotas usando o mux
 	r := mux.NewRouter()
 
@@ -32,7 +28,8 @@ func main() {
 	r.Use(middleware.CorsMiddleware)
 
 	// Registrar rotas CRUD para eleições (removendo o uso de Auth)
-	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost)
+	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost, http.MethodOptions)
+	// r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost)
 	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet)
 	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods(http.MethodPut)
 	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods(http.MethodDelete)

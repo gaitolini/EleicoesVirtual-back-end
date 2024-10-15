@@ -14,6 +14,11 @@ import (
 
 // CriarEleicao cria uma nova eleição
 func CriarEleicao(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	var novaEleicao models.Eleicao
 	if err := json.NewDecoder(r.Body).Decode(&novaEleicao); err != nil {
 		utils.HandleError(w, err, http.StatusBadRequest)
