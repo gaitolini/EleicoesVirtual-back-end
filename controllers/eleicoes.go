@@ -40,6 +40,11 @@ func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 
 // ListarEleicoes lista todas as eleições
 func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	eleicoes, err := services.ListarEleicoes()
 	if err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
@@ -54,6 +59,11 @@ func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 
 // ObterEleicao obtém uma eleição específica
 func ObterEleicao(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id := vars["id"]
 
@@ -71,7 +81,11 @@ func ObterEleicao(w http.ResponseWriter, r *http.Request) {
 
 // AtualizarEleicao lida com a atualização de uma eleição existente
 func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
-	// Log para diagnóstico
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	log.Println("Entrando no controlador de AtualizarEleicao")
 
 	var eleicaoAtualizada models.Eleicao
@@ -80,17 +94,14 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Obter o ID da eleição a partir dos parâmetros da URL
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	// Verificar se o ID foi realmente obtido
 	if id == "" {
 		utils.HandleError(w, nil, http.StatusBadRequest)
 		return
 	}
 
-	// Atualizar a eleição usando o serviço
 	if err := services.AtualizarEleicao(id, eleicaoAtualizada); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
@@ -104,7 +115,12 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 
 // DeletarEleicao lida com a exclusão de uma eleição existente
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"] // Extraindo o ID da URL
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	id := mux.Vars(r)["id"]
 	if id == "" {
 		http.Error(w, "ID não fornecido", http.StatusBadRequest)
 		return
