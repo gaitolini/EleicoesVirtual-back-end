@@ -51,6 +51,7 @@ func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Certifique-se de que as datas estejam sendo corretamente convertidas
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(eleicoes); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)

@@ -29,11 +29,10 @@ func main() {
 
 	// Registrar rotas CRUD para eleições (removendo o uso de Auth)
 	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost, http.MethodOptions)
-	// r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost)
-	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet)
-	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods(http.MethodPut)
-	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods(http.MethodDelete)
-	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods(http.MethodGet)
+	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet, http.MethodOptions)
+	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods(http.MethodPut, http.MethodOptions)
+	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods(http.MethodDelete, http.MethodOptions)
+	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods(http.MethodGet, http.MethodOptions)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)
