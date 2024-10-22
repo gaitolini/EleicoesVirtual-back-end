@@ -7,11 +7,10 @@ import (
 
 // Lista de origens permitidas
 var allowedOrigins = []string{
-	"https://eleicoesvirtual.web.app",
-	"https://outrodominio.com", // Adicione outras origens conforme necessário
+	"https://eleicoesvirtual.web.app", // Adicione outras origens permitidas conforme necessário
 }
 
-// isAllowedOrigin verifica se a origem está na lista de permitidos
+// Verifica se a origem está na lista permitida
 func isAllowedOrigin(origin string) bool {
 	for _, o := range allowedOrigins {
 		if o == origin {
@@ -26,12 +25,9 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		// Se o Origin estiver vazio (possível em algumas requisições de ferramentas como Postman)
-		if origin == "" {
-			origin = "https://eleicoesvirtual.web.app" // Origem padrão ou permitir sem origin
-		}
-
-		if isAllowedOrigin(origin) {
+		// Se a origem estiver permitida, adicionar os cabeçalhos CORS
+		if origin != "" && isAllowedOrigin(origin) {
+			log.Printf("CORS permitido para a origem: %s", origin)
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -40,11 +36,13 @@ func CorsMiddleware(next http.Handler) http.Handler {
 			log.Printf("CORS bloqueado para a origem: %s", origin)
 		}
 
+		// Se for uma requisição preflight (OPTIONS), responder imediatamente
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
+		// Passar para o próximo middleware
 		next.ServeHTTP(w, r)
 	})
 }
