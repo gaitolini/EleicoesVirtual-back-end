@@ -26,26 +26,25 @@ func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 
-		// Se a origem estiver na lista de permitidas, adicionar os cabeçalhos CORS
-		if origin != "" && isAllowedOrigin(origin) {
-			log.Printf("CORS permitido para a origem: %s", origin)
+		// Se o Origin estiver vazio (possível em algumas requisições de ferramentas como Postman)
+		if origin == "" {
+			origin = "https://eleicoesvirtual.web.app" // Origem padrão ou permitir sem origin
+		}
+
+		if isAllowedOrigin(origin) {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 		} else {
 			log.Printf("CORS bloqueado para a origem: %s", origin)
-			// Se a origem não for permitida, não adicionamos os cabeçalhos CORS
 		}
 
-		// Verificar se é uma requisição preflight (OPTIONS)
 		if r.Method == http.MethodOptions {
-			log.Printf("Recebendo requisição OPTIONS para %s", r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// Passar para o próximo middleware
 		next.ServeHTTP(w, r)
 	})
 }
