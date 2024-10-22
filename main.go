@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,7 +20,13 @@ func main() {
 	}
 
 	// Inicializar o cliente Firestore
-	services.InitializeFirestoreClient(string(file))
+	services.InitializeFirebaseClient(string(file))
+
+	// Inicializar Firebase Auth
+	ctx := context.Background()
+	if err := services.InitializeFirebaseAuth(ctx); err != nil {
+		log.Fatalf("Erro ao inicializar FirebaseAuth: %v", err)
+	}
 
 	// Configurar as rotas usando o mux
 	r := mux.NewRouter()
@@ -27,12 +34,13 @@ func main() {
 	// Middleware para adicionar cabeçalhos CORS manualmente
 	r.Use(middleware.CorsMiddleware)
 
-	// Registrar rotas CRUD para eleições (removendo o uso de Auth)
-	r.HandleFunc("/eleicoes", controllers.CriarEleicao).Methods(http.MethodPost, http.MethodOptions)
+	// Middleware de autenticação para rotas protegidas
+	// Aplicar em rotas sensíveis como criação, atualização e exclusão de eleições
 	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet, http.MethodOptions)
-	r.HandleFunc("/eleicoes/{id}", controllers.AtualizarEleicao).Methods(http.MethodPut, http.MethodOptions)
-	r.HandleFunc("/eleicoes/{id}", controllers.DeletarEleicao).Methods(http.MethodDelete, http.MethodOptions)
-	r.HandleFunc("/eleicoes/{id}", controllers.ObterEleicao).Methods(http.MethodGet, http.MethodOptions)
+	r.Handle("/eleicoes", middleware.AuthMiddleware(http.HandlerFunc(controllers.CriarEleicao))).Methods(http.MethodPost, http.MethodOptions)
+	r.Handle("/eleicoes/{id}", middleware.AuthMiddleware(http.HandlerFunc(controllers.AtualizarEleicao))).Methods(http.MethodPut, http.MethodOptions)
+	r.Handle("/eleicoes/{id}", middleware.AuthMiddleware(http.HandlerFunc(controllers.DeletarEleicao))).Methods(http.MethodDelete, http.MethodOptions)
+	r.Handle("/eleicoes/{id}", middleware.AuthMiddleware(http.HandlerFunc(controllers.ObterEleicao))).Methods(http.MethodGet, http.MethodOptions)
 
 	// Registrar log para todas as requisições
 	r.Use(loggingMiddleware)

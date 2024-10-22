@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// CriarEleicao cria uma nova eleição
+// CriarEleicao cria uma nova eleição (requer token JWT)
 func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -38,7 +38,7 @@ func CriarEleicao(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ListarEleicoes lista todas as eleições
+// ListarEleicoes lista todas as eleições (pode ser público ou protegido)
 func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -51,14 +51,13 @@ func ListarEleicoes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Certifique-se de que as datas estejam sendo corretamente convertidas
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(eleicoes); err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError)
 	}
 }
 
-// ObterEleicao obtém uma eleição específica
+// ObterEleicao obtém uma eleição específica pelo ID (requer token JWT)
 func ObterEleicao(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -80,7 +79,7 @@ func ObterEleicao(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// AtualizarEleicao lida com a atualização de uma eleição existente
+// AtualizarEleicao lida com a atualização de uma eleição existente (requer token JWT)
 func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
@@ -114,7 +113,7 @@ func AtualizarEleicao(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeletarEleicao lida com a exclusão de uma eleição existente
+// DeletarEleicao lida com a exclusão de uma eleição existente (requer token JWT)
 func DeletarEleicao(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		w.WriteHeader(http.StatusOK)
