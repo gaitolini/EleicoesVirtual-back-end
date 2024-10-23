@@ -36,7 +36,8 @@ func main() {
 
 	// Middleware de autenticação para rotas protegidas
 	// Aplicar em rotas sensíveis como criação, atualização e exclusão de eleições
-	r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet, http.MethodOptions)
+	//r.HandleFunc("/eleicoes", controllers.ListarEleicoes).Methods(http.MethodGet, http.MethodOptions)
+	r.Handle("/eleicoes", middleware.AuthMiddleware(http.HandlerFunc(controllers.ListarEleicoes))).Methods(http.MethodGet, http.MethodOptions)
 	r.Handle("/eleicoes", middleware.AuthMiddleware(http.HandlerFunc(controllers.CriarEleicao))).Methods(http.MethodPost, http.MethodOptions)
 	r.Handle("/eleicoes/{id}", middleware.AuthMiddleware(http.HandlerFunc(controllers.AtualizarEleicao))).Methods(http.MethodPut, http.MethodOptions)
 	r.Handle("/eleicoes/{id}", middleware.AuthMiddleware(http.HandlerFunc(controllers.DeletarEleicao))).Methods(http.MethodDelete, http.MethodOptions)
