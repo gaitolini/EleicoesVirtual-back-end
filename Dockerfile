@@ -29,7 +29,7 @@ RUN apk --no-cache add ca-certificates
 COPY --from=build /app/eleicoes-backend .
 
 # Copiar o arquivo firebaseConfig.json para o diretório de trabalho
-#COPY firebaseConfig.json ./firebaseConfig.json
+COPY firebaseConfig.json ./firebaseConfig.json
 
 # Definir a variável de ambiente para as credenciais do Firebase (caso precise)
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/firebaseConfig.json
