@@ -17,8 +17,8 @@ jobs:
       - name: Create Firebase Credentials File
         run: |
           echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 --decode > firebaseConfig.json
-      
-      #para executar o comando docker system prune -f na máquina destino antes de copiar os arquivos e criar novos contêineres. 
+
+      #para executar o comando docker system prune -f na máquina destino antes de copiar os arquivos e criar novos contêineres.
       - name: SSH Prune Docker
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -27,8 +27,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             docker system prune -f
-      
-          
+
       # Build the Docker image
       - name: Build Docker Image
         run: |
@@ -54,7 +53,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             cd ~/EleicoesVirtual-back-end/
-            
+
             # Parar e remover o contêiner antigo, se ele existir
             if [ "$(docker ps -q -f name=eleicoes-backend)" ]; then
               echo "Parando e removendo contêiner antigo..."
@@ -67,11 +66,12 @@ jobs:
               echo "Removendo imagem antiga..."
               docker rmi eleicoes-backend
             fi
-            
+
             # Build e rodar o novo contêiner
             echo "Construindo e rodando nova imagem..."
             docker build --no-cache -t eleicoes-backend .
+            # Rodar o novo contêiner
             docker run -d -p 8081:8081 --name eleicoes-backend \
-              -v $(pwd)/firebaseConfig.json:/app/credentials/firebaseConfig.json \
-              -e GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/firebaseConfig.json \
-              eleicoes-backend
+            -v $(pwd)/firebaseConfig.json:/app/firebaseConfig.json \
+            -e GOOGLE_APPLICATION_CREDENTIALS=/app/firebaseConfig.json \
+            eleicoes-backend
