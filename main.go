@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gaitolini/EleicoesVirtual-back-end/controllers"
 	"github.com/gaitolini/EleicoesVirtual-back-end/middleware"
@@ -14,7 +14,7 @@ import (
 
 func main() {
 	// Ler o arquivo de configuração JSON do Firebase
-	file, err := ioutil.ReadFile("firebaseConfig.json")
+	file, err := os.ReadFile("firebaseConfig.json")
 	if err != nil {
 		log.Fatalf("Erro ao ler o arquivo firebaseConfig.json: %v", err)
 	}
